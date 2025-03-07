@@ -1,17 +1,17 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from watchlist_app.models import Movie
-from watchlist_app.api.serializer import MovieSerializer
+from watchlist_app.models import StreamPlatform,WatchList
+from watchlist_app.api.serializer import WatchListSerializer,StreamPlatformSerializer
 from rest_framework.views import APIView
 
-class Movie_listAV(APIView):
+class WatchListAV(APIView):
    
    def get(self,request):
-            movies = Movie.objects.all()
-            serializer = MovieSerializer(movies,many=True)
+            movies = WatchList.objects.all()
+            serializer = WatchListSerializer(movies,many=True)
             return Response(serializer.data)
    def post(self,request):
-        serializer = MovieSerializer(data=request.data)
+        serializer = WatchListSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -21,23 +21,23 @@ class Movie_listAV(APIView):
 
 
 
-class Movle_DetailsAV(APIView):
+class WatchList_DetailsAV(APIView):
      
      def get_movie(self,pk):
           try:
-             return Movie.objects.get(pk=pk)
-          except Movie.DoesNotExist:
+             return WatchList.objects.get(pk=pk)
+          except WatchList.DoesNotExist:
               return None
             
           
      def get(self,request,pk):
           movie = self.get_movie(pk)
-          serializer = MovieSerializer(movie)
+          serializer = WatchListSerializer(movie)
           return Response(serializer.data)
      
      def put(self,request,pk):
             movie = self.get_movie(pk)
-            serializer = MovieSerializer(movie,data=request.data)
+            serializer = WatchListSerializer(movie,data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -50,6 +50,20 @@ class Movle_DetailsAV(APIView):
             return Response()
             
 
+class StreamPlatformAV(APIView):
+   
+   def get(self,request):
+            movies = StreamPlatform.objects.all()
+            serializer = StreamPlatformSerializer(movies,many=True)
+            return Response(serializer.data)
+   def post(self,request):
+        serializer = StreamPlatformSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
+        
 
 
 
