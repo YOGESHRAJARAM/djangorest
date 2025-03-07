@@ -1,4 +1,3 @@
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from watchlist_app.models import StreamPlatform,WatchList
 from watchlist_app.api.serializer import WatchListSerializer,StreamPlatformSerializer
@@ -63,7 +62,33 @@ class StreamPlatformAV(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
+
+class Stream_DetailsAV(APIView):
+     
+     def get_movie(self,pk):
+          try:
+             return StreamPlatform.objects.get(pk=pk)
+          except StreamPlatform.DoesNotExist:
+              return None
+            
+          
+     def get(self,request,pk):
+          movie = self.get_movie(pk)
+          serializer = StreamPlatformSerializer(movie)
+          return Response(serializer.data)
+     
+     def put(self,request,pk):
+            movie = self.get_movie(pk)
+            serializer = StreamPlatformSerializer(movie,data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors)
         
-
-
+     def delete(self,pk,request):
+            movie = self.get_movie(pk)
+            movie.delete()
+            return Response()
+        
 
