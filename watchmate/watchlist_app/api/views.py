@@ -5,33 +5,54 @@ from rest_framework.views import APIView
 from rest_framework import mixins
 from rest_framework import generics
 
-class ReviewList(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  generics.GenericAPIView):
+
+class ReviewCreat(generics.CreateAPIView):
+    #   queryset = Review.objects.all()
+      serializer_class = ReviewSerializer
+      def perform_create(self, serializer):
+           pk = self.kwargs.get('pk')
+           movie = WatchList.objects.get(pk=pk)
+           serializer.save(watchlist = movie)
+
+class ReviewList(generics.ListAPIView):
+    #   queryset = Review.objects.all()
+      serializer_class = ReviewSerializer
+
+      def get_queryset(self):
+           pk = self.kwargs.get('pk')
+           return Review.objects.filter(watchlist=pk)
+
+class ReviewDetails(generics.RetrieveUpdateDestroyAPIView):
+        queryset = Review.objects.all()
+        serializer_class = ReviewSerializer
+
+# class ReviewList(mixins.ListModelMixin,
+#                   mixins.CreateModelMixin,
+#                   generics.GenericAPIView):
      
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
+#     queryset = Review.objects.all()
+#     serializer_class = ReviewSerializer
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)
     
-class ReviewDetails(mixins.RetrieveModelMixin,
-                    mixins.UpdateModelMixin,
-                    mixins.DestroyModelMixin,generics.GenericAPIView):
-          queryset = Review.objects.all()
-          serializer_class = ReviewSerializer
+# class ReviewDetails(mixins.RetrieveModelMixin,
+#                     mixins.UpdateModelMixin,
+#                     mixins.DestroyModelMixin,generics.GenericAPIView):
+#           queryset = Review.objects.all()
+#           serializer_class = ReviewSerializer
 
-          def get(self, request, *args, **kwargs):
-           return self.retrieve(request, *args, **kwargs)
+#           def get(self, request, *args, **kwargs):
+#            return self.retrieve(request, *args, **kwargs)
 
-          def put(self, request, *args, **kwargs):
-             return self.update(request, *args, **kwargs)
+#           def put(self, request, *args, **kwargs):
+#              return self.update(request, *args, **kwargs)
 
-          def delete(self, request, *args, **kwargs):
-             return self.destroy(request, *args, **kwargs)
+#           def delete(self, request, *args, **kwargs):
+#              return self.destroy(request, *args, **kwargs)
 
 class WatchListAV(APIView):
    
