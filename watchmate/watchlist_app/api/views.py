@@ -2,19 +2,31 @@ from rest_framework.response import Response
 from watchlist_app.models import StreamPlatform,WatchList,Review
 from watchlist_app.api.serializer import WatchListSerializer,StreamPlatformSerializer,ReviewSerializer
 from rest_framework.views import APIView
-from rest_framework import mixins
+from rest_framework.exceptions import ValidationError
+# from rest_framework import mixins
 from rest_framework import generics
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 
 
 class ReviewCreat(generics.CreateAPIView):
-    #   queryset = Review.objects.all()
+
+      def get_queryset(self):
+           return  Review.objects.all()
+      
       serializer_class = ReviewSerializer
       def perform_create(self, serializer):
+          
            pk = self.kwargs.get('pk')
-           movie = WatchList.objects.get(pk=pk)
-           serializer.save(watchlist = movie)
+           watchlist = WatchList.objects.get(pk=pk)
+
+           User = self.request.user
+           review_queryset = Review.objects.filter(watchlist=watchlist,review_user=User)
+
+           if review_queryset.exists():
+                raise ValidationError("The user already wrote review ")
+
+           serializer.save(watchlist=watchlist,review_user=User)
 
 class ReviewList(generics.ListAPIView):
     #   queryset = Review.objects.all()
