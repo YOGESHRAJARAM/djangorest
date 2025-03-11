@@ -7,6 +7,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import generics
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from watchlist_app.api.permissions import ReviewUserOrReadonly,AdminOrReadOnly
 
 
 class ReviewCreat(generics.CreateAPIView):
@@ -25,12 +27,21 @@ class ReviewCreat(generics.CreateAPIView):
 
            if review_queryset.exists():
                 raise ValidationError("The user already wrote review ")
+           
+           if watchlist.avg_rating == 0:
+                watchlist.avg_rating = serializer.validated_data['rating']
+           else:
+                watchlist.avg_rating = (watchlist.avg_rating + serializer.validated_data['rating'])/2
+
+           watchlist.number_rating = watchlist.number_rating + 1
+           watchlist.save()
 
            serializer.save(watchlist=watchlist,review_user=User)
 
 class ReviewList(generics.ListAPIView):
     #   queryset = Review.objects.all()
       serializer_class = ReviewSerializer
+      permission_classes = [IsAuthenticated]
 
       def get_queryset(self):
            pk = self.kwargs.get('pk')
@@ -39,6 +50,7 @@ class ReviewList(generics.ListAPIView):
 class ReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         queryset = Review.objects.all()
         serializer_class = ReviewSerializer
+        permission_classes = [ReviewUserOrReadonly]
 
 # class ReviewList(mixins.ListModelMixin,
 #                   mixins.CreateModelMixin,
@@ -70,6 +82,7 @@ class ReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
 class WatchListAV(APIView):
    
+   
    def get(self,request):
             movies = WatchList.objects.all()
             serializer = WatchListSerializer(movies,many=True)
@@ -86,6 +99,8 @@ class WatchListAV(APIView):
 
 
 class WatchList_DetailsAV(APIView):
+     
+     permission_classes =  [AdminOrReadOnly]
      
      def get_movie(self,pk):
           try:
@@ -119,6 +134,7 @@ class WatchList_DetailsAV(APIView):
 class StreamPlatformVS(viewsets.ModelViewSet):
      queryset = StreamPlatform.objects.all()
      serializer_class = StreamPlatformSerializer
+     permission_classes = [IsAuthenticatedOrReadOnly]
  
     # def list(self, request):
     #     queryset = StreamPlatform.objects.all()
